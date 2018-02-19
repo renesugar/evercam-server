@@ -34,7 +34,7 @@ defmodule EvercamMediaWeb.CameraShareController do
     email_array = ensure_list(params["email"])
 
     with :ok <- camera_exists(conn, params["id"], camera),
-         :ok <- user_can_create_share(conn, caller, camera)
+         :ok <- caller_has_permission(conn, caller, camera)
     do
       requester_ip = user_request_ip(conn)
 
