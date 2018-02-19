@@ -17,6 +17,7 @@ defmodule CameraShare do
   end
 
   def rights_list("full"), do: ["snapshot", "view", "edit", "list"]
+  def rights_list("minimal+share"), do: ["snapshot", "share", "list"]
   def rights_list(_), do: ["snapshot", "list"]
 
   def create_share(camera, sharee, sharer, rights, message, kind \\ "private") do
@@ -154,7 +155,7 @@ defmodule CameraShare do
   end
 
   def get_rights("private", user, camera) do
-    ["snapshot", "list", "view", "edit", "delete"]
+    ["snapshot", "list", "share", "view", "edit", "delete"]
     |> Enum.filter(fn(right) -> Permission.Camera.can_access?(right, user, camera) end)
     |> Enum.join(",")
   end

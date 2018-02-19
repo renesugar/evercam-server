@@ -175,10 +175,10 @@ defmodule EvercamMediaWeb.CameraShareController do
   defp user_exists(_conn, _user_id, _user), do: :ok
 
   defp caller_has_permission(conn, user, camera) do
-    if Permission.Camera.can_edit?(user, camera) do
-      :ok
-    else
-      render_error(conn, 401, "Unauthorized.")
+    cond do
+      Permission.Camera.can_edit?(user, camera) -> :ok
+      Permission.Camera.can_share?(user, camera) -> :ok
+      true -> render_error(conn, 401, "Unauthorized.")
     end
   end
 
@@ -194,7 +194,7 @@ defmodule EvercamMediaWeb.CameraShareController do
   end
 
   defp user_can_create_share(conn, caller, camera) do
-    if Permission.Camera.can_list?(caller, camera), do: :ok, else: render_error(conn, 401, "Unauthorized.")
+    if Permission.Camera.can_share?(caller, camera), do: :ok, else: render_error(conn, 401, "Unauthorized.")
   end
 
   defp user_can_delete_share(conn, caller, sharee, camera) do

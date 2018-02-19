@@ -10,6 +10,10 @@ defmodule Permission.Camera do
     can_access?("view", requester, camera)
   end
 
+  def can_share?(requester, camera) do
+    can_access?("share", requester, camera)
+  end
+
   def can_snapshot?(requester, camera) do
     can_access?("snapshot", requester, camera)
   end

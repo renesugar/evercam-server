@@ -9,14 +9,9 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
     status = parse_status(params["status"])
 
     with :ok <- camera_exists(conn, exid, camera),
-         :ok <- user_can_list(conn, caller, camera)
+         :ok <- caller_has_rights(conn, caller, camera)
     do
-     share_requests =
-       if caller != nil && Permission.Camera.can_edit?(caller, camera) do
-         CameraShareRequest.by_camera_and_status(camera, status)
-       else
-         []
-       end
+     share_requests = CameraShareRequest.by_camera_and_status(camera, status)
 
       conn
       |> render(CameraShareRequestView, "index.json", %{camera_share_requests: share_requests})
@@ -28,7 +23,7 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
     camera = Camera.get_full(exid)
 
     with :ok <- camera_exists(conn, exid, camera),
-         :ok <- caller_has_permission(conn, caller, camera),
+         :ok <- caller_has_rights(conn, caller, camera),
          {:ok, share_request} <- share_request_exists(conn, email, camera)
     do
       share_request
@@ -51,7 +46,7 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
     key = params["key"]
 
     with :ok <- camera_exists(conn, exid, camera),
-         :ok <- has_caller(conn, caller, camera, key),
+         :ok <- caller_has_rights(conn, caller, camera),
          {:ok, share_request} <- has_share_request(conn, email, camera, key)
     do
       params = %{rights: share_request.rights, status: CameraShareRequest.status.cancelled}
@@ -76,6 +71,15 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
     end
   end
 
+  defp caller_has_rights(conn, user, camera) do
+    cond do
+      Permission.Camera.can_edit?(user, camera) -> :ok
+      Permission.Camera.can_share?(user, camera) -> :ok
+      true -> render_error(conn, 401, "Unauthorized.")
+    end
+  end
+
+  # Delete after complete test
   defp has_caller(conn, user, camera, nil) do
     caller_has_permission(conn, user, camera)
   end
@@ -107,7 +111,7 @@ defmodule EvercamMediaWeb.CameraShareRequestController do
   end
 
   defp user_can_list(conn, user, camera) do
-    if Permission.Camera.can_list?(user, camera), do: :ok, else: render_error(conn, 401, "Unauthorized.")
+    if Permission.Camera.can_share?(user, camera), do: :ok, else: render_error(conn, 401, "Unauthorized.")
   end
 
   defp camera_exists(conn, camera_exid, nil), do: render_error(conn, 404, "The #{camera_exid} camera does not exist.")

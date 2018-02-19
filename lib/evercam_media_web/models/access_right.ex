@@ -5,8 +5,8 @@ defmodule AccessRight do
 
   @required_fields ~w(token_id right status)
   @optional_fields ~w(camera_id grantor_id snapshot_id account_id scope updated_at created_at)
-  @camera_rights ["delete", "edit", "list", "snapshot", "view", "grant~delete",
-                  "grant~edit", "grant~list", "grant~snapshot", "grant~view"]
+  @camera_rights ["delete", "edit", "list", "snapshot", "share", "view", "grant~delete",
+                  "grant~edit", "grant~list", "grant~snapshot", "grant~share", "grant~view"]
   @status %{active: 1, deleted: -1}
 
   schema "access_rights" do
