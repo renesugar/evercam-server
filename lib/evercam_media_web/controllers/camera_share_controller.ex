@@ -18,7 +18,7 @@ defmodule EvercamMediaWeb.CameraShareController do
             []
           user != nil && current_user != nil ->
             CameraShare.user_camera_share(camera, user)
-          current_user != nil && Permission.Camera.can_edit?(current_user, camera) ->
+          current_user != nil && caller_can_view(current_user, camera) ->
             CameraShare.camera_shares(camera)
           true ->
             []
@@ -182,6 +182,10 @@ defmodule EvercamMediaWeb.CameraShareController do
     end
   end
 
+  defp caller_can_view(user, camera) do
+    Permission.Camera.can_edit?(user, camera) || Permission.Camera.can_share?(user, camera)
+  end
+
   defp user_can_list(_conn, _user, _camera, nil), do: :ok
   defp user_can_list(conn, user, camera, user_id) do
     user_id = String.downcase(user_id)
@@ -191,10 +195,6 @@ defmodule EvercamMediaWeb.CameraShareController do
     else
       :ok
     end
-  end
-
-  defp user_can_create_share(conn, caller, camera) do
-    if Permission.Camera.can_share?(caller, camera), do: :ok, else: render_error(conn, 401, "Unauthorized.")
   end
 
   defp user_can_delete_share(conn, caller, sharee, camera) do
