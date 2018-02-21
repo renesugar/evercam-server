@@ -208,12 +208,13 @@ defmodule EvercamMediaWeb.UserController do
   end
 
   defp delete_user(user) do
+    Camera.delete_by_owner(user.id)
+    CameraShare.delete_by_user(user.id)
+    CameraShareRequest.delete_by_user_id(user.id)
+    User.delete_by_id(user.id)
     User.invalidate_auth(user.api_id, user.api_key)
     Camera.invalidate_user(user)
     User.invalidate_share_users(user)
-    Camera.delete_by_owner(user.id)
-    CameraShare.delete_by_user(user.id)
-    User.delete_by_id(user.id)
     Intercom.delete_user(user.username)
   end
 

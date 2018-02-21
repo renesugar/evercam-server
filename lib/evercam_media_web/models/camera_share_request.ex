@@ -140,6 +140,12 @@ defmodule CameraShareRequest do
     |> Repo.delete_all
   end
 
+  def delete_by_user_id(user_id) do
+    CameraShareRequest
+    |> where(user_id: ^user_id)
+    |> Repo.delete_all
+  end
+
   def insert_changeset(model, params \\ :invalid) do
     model
     |> changeset(params)
