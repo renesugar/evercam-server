@@ -14,8 +14,7 @@ defmodule EvercamMedia.Zoho do
         json_response = Poison.decode!(response.body)
         case Util.deep_get(json_response, ["response", "nodata", "code"], nil) do
           nil -> {:nodata, Util.deep_get(json_response, ["response", "nodata", "message"], "")}
-          _ ->
-            {:ok, Util.deep_get(json_response, ["response", "result", "CustomModule4", "row", "FL"], "")}
+          _ -> {:ok, Util.deep_get(json_response, ["response", "result", "CustomModule4", "row", "FL"], "")}
         end
       _ -> {:error, response}
     end

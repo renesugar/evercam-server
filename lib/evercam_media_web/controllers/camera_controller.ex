@@ -7,6 +7,7 @@ defmodule EvercamMediaWeb.CameraController do
   alias EvercamMedia.Snapshot.WorkerSupervisor
   alias EvercamMedia.TimelapseRecording.TimelapseRecordingSupervisor
   alias EvercamMedia.Snapshot.CamClient
+  alias EvercamMedia.Zoho
   alias EvercamMedia.Util
   require Logger
   import String, only: [to_integer: 1]
@@ -198,6 +199,7 @@ defmodule EvercamMediaWeb.CameraController do
           CameraActivity.log_activity(caller, camera, "created", %{ip: user_request_ip(conn), agent: get_user_agent(conn)})
           Camera.invalidate_user(caller)
           send_email_notification(Application.get_env(:evercam_media, :run_spawn), caller, full_camera)
+          add_camera_to_zoho(Application.get_env(:evercam_media, :run_spawn), full_camera, caller.id)
           conn
           |> put_status(:created)
           |> render("show.json", %{camera: full_camera, user: caller})
@@ -207,6 +209,16 @@ defmodule EvercamMediaWeb.CameraController do
       end
     end
   end
+
+  defp add_camera_to_zoho(true, camera, user_id) when user_id in ["garda", "gardashared", "construction", "oldconstruction", "smartcities"] do
+    spawn fn ->
+      case Zoho.get_camera(camera.exid) do
+        {:ok, _} -> Logger.info "[add_camera_to_zoho] [#{camera.exid}] [Camera already exists]"
+        _ -> Zoho.insert_camera([camera])
+      end
+    end
+  end
+  defp add_camera_to_zoho(_mode, _camera, user_id), do: :noop
 
   defp check_params(params) do
     with :ok <- validate("address", params["address"]),
