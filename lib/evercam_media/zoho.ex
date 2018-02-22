@@ -9,11 +9,12 @@ defmodule EvercamMedia.Zoho do
     url = "#{@zoho_url}json/CustomModule4/searchRecords?authtoken=#{@zoho_auth_token}&scope=crmapi&newFormat=2&criteria=(Evercam%20ID:#{camera_exid})"
     headers = ["Accept": "application/offset+octet-stream", "Content-Type": "multipart/form-data"]
     response = HTTPoison.get(url, headers) |> elem(1)
+
     case response.status_code do
       200 ->
         json_response = Poison.decode!(response.body)
         case Util.deep_get(json_response, ["response", "nodata", "code"], nil) do
-          nil -> {:nodata, Util.deep_get(json_response, ["response", "nodata", "message"], "")}
+          "4422" -> {:nodata, Util.deep_get(json_response, ["response", "nodata", "message"], "")}
           _ -> {:ok, Util.deep_get(json_response, ["response", "result", "CustomModule4", "row", "FL"], "")}
         end
       _ -> {:error, response}
