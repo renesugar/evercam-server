@@ -218,7 +218,7 @@ defmodule EvercamMediaWeb.CameraController do
       end
     end
   end
-  defp add_camera_to_zoho(_mode, _camera, user_id), do: :noop
+  defp add_camera_to_zoho(_mode, _camera, _user_id), do: :noop
 
   defp check_params(params) do
     with :ok <- validate("address", params["address"]),
@@ -431,18 +431,21 @@ defmodule EvercamMediaWeb.CameraController do
 
   defp delete_camera_worker(camera) do
     MetaData.delete_by_camera_id(camera.id)
+    SnapmailCamera.delete_by_camera_id(camera.id)
+    SnapshotExtractor.delete_by_camera_id(camera.id)
+    Timelapse.delete_by_camera_id(camera.id)
+    Camera.delete_by_id(camera.id)
     CloudRecording.delete_by_camera_id(camera.id)
     CameraShare.delete_by_camera_id(camera.id)
     CameraShareRequest.delete_by_camera_id(camera.id)
     Archive.delete_by_camera(camera.id)
-    Timelapse.delete_by_camera_id(camera.id)
-    Camera.delete_by_id(camera.id)
+    Compare.delete_by_camera(camera.id)
   end
 
   defp delete_snapshot_worker(camera) do
     Camera.invalidate_camera(camera)
-    Storage.delete_everything_for(camera.exid)
     CameraActivity.delete_by_camera_id(camera.id)
+    Storage.delete_everything_for(camera.exid)
   end
 
   defp create_thumbnail(camera, mac_address) do

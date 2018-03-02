@@ -38,6 +38,12 @@ defmodule SnapshotExtractor do
     end
   end
 
+  def delete_by_camera_id(camera_id) do
+    SnapshotExtractor
+    |> where(camera_id: ^camera_id)
+    |> Repo.delete_all
+  end
+
   def required_fields do
     @required_fields |> Enum.map(fn(field) -> String.to_atom(field) end)
   end
